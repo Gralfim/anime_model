@@ -68,7 +68,7 @@ features:
       skip_if_anilist: true    # AniList má "Military"
     - name: "Reverse Harem"
       mal_id: 43
-      skip_if_anilist: false   # žádný přesný AniList ekvivalent
+      skip_if_anilist: true   # žádný přesný AniList ekvivalent
 
   # Demografie (one-hot, reference = shounen)
   demographics:
@@ -160,56 +160,78 @@ anilist:
   # Tagy k zahrnutí — názvy přesně dle AniList (case-sensitive)
   # Průzkum: python main.py --list-tags
   tags:
-    # Archetypy ženských postav
-    - "Tsundere"
-    - "Kuudere"
-    - "Dandere"
-    - "Yandere"
-    - "Genki Girl"
-    - "Ojou-sama"
-    - "Tomboy"
-
-    # Narativní vzory v romance
-    - "Love Triangle"
-    - "Slow Romance"
-    - "Childhood Friends"
-    - "Rivals to Lovers"
-    - "Fake Relationship"
-    - "Unrequited Love"
-    - "Age Gap"
-    - "Forbidden Love"
-    - "Sudden Girlfriend Appearance"
-
+    # Archetypy postav
+    - "Tsundere"  # 145 titulů (36%)
+    - "Kuudere"  # 141 titulů (35%)
+    - "Yandere"  # 36 titulů (9%)
+    - "Ojou-sama"  # 28 titulů (7%)
+    - "Tomboy"  # 47 titulů (12%)
+    # Romance vzory
+    - "Love Triangle"  # 100 titulů (25%)
+    - "Unrequited Love"  # 51 titulů (13%)
     # Emocionální tón
-    - "Tearjerker"
-    - "Feel-good"
-    - "Tragedy"
-    - "Bittersweet"
-
-    # Tematické kategorie
-    - "Coming of Age"
-    - "Philosophy"
-    - "Psychological"
-    - "Found Family"
-    - "Music"
-
-    # Prostředí a zasazení (AniList verze — nahrazují MAL témata)
-    - "School"
-    - "School Club"
-    - "Workplace"
-    - "Isekai"
-    - "Military"
-    - "Time Skip"
-    - "Time Manipulation"
-
-    # Narativní struktura
-    - "Non-linear Storytelling"
-    - "Multiple Protagonists"
-    - "Ensemble Cast"
-
-    # Harem typy (AniList verze)
-    - "Harem"
-    - "Reverse Harem"
+    - "Slapstick"  # 79 titulů (20%)
+    - "Parody"  # 65 titulů (16%)
+    # Témata a prostředí
+    - "School"  # 225 titulů (56%)
+    - "School Club"  # 85 titulů (21%)
+    - "Isekai"  # 61 titulů (15%)
+    - "Military"  # 30 titulů (8%)
+    - "Coming of Age"  # 98 titulů (24%)
+    - "Found Family"  # 30 titulů (8%)
+    - "Philosophy"  # 41 titulů (10%)
+    - "Ensemble Cast"  # 116 titulů (29%)
+    # Ostatní
+    - "Male Protagonist"  # 275 titulů (69%)
+    - "Heterosexual"  # 250 titulů (62%)
+    - "Female Protagonist"  # 196 titulů (49%)
+    - "Female Harem"  # 166 titulů (42%)
+    - "Primarily Female Cast"  # 141 titulů (35%)
+    - "Primarily Teen Cast"  # 138 titulů (34%)
+    - "Nudity"  # 129 titulů (32%)
+    - "Shounen"  # 117 titulů (29%)
+    - "Urban Fantasy"  # 75 titulů (19%)
+    - "Magic"  # 73 titulů (18%)
+    - "Urban"  # 67 titulů (17%)
+    - "Seinen"  # 61 titulů (15%)
+    - "CGI"  # 61 titulů (15%)
+    - "Crossdressing"  # 54 titulů (14%)
+    - "Primarily Adult Cast"  # 54 titulů (14%)
+    - "Maids"  # 52 titulů (13%)
+    - "Episodic"  # 51 titulů (13%)
+    - "Swordplay"  # 48 titulů (12%)
+    - "Meta"  # 47 titulů (12%)
+    - "Medieval"  # 44 titulů (11%)
+    - "Gore"  # 42 titulů (10%)
+    - "Anti-Hero"  # 42 titulů (10%)
+    - "Chuunibyou"  # 41 titulů (10%)
+    - "Super Power"  # 41 titulů (10%)
+    - "LGBTQ+ Themes"  # 40 titulů (10%)
+    - "Gender Bending"  # 40 titulů (10%)
+    - "Gods"  # 39 titulů (10%)
+    - "Demons"  # 39 titulů (10%)
+    - "Family Life"  # 38 titulů (10%)
+    - "Chibi"  # 38 titulů (10%)
+    - "Work"  # 37 titulů (9%)
+    - "Otaku Culture"  # 36 titulů (9%)
+    - "Guns"  # 36 titulů (9%)
+    - "Memory Manipulation"  # 35 titulů (9%)
+    - "Politics"  # 35 titulů (9%)
+    - "Cohabitation"  # 34 titulů (8%)
+    - "War"  # 33 titulů (8%)
+    - "Animals"  # 33 titulů (8%)
+    - "Bullying"  # 30 titulů (8%)
+    - "Surreal Comedy"  # 30 titulů (8%)
+    - "Monster Girl"  # 30 titulů (8%)
+    - "Food"  # 30 titulů (8%)
+    - "Video Games"  # 30 titulů (8%)
+    - "Elf"  # 29 titulů (7%)
+    - "Assassins"  # 29 titulů (7%)
+    - "Rehabilitation"  # 28 titulů (7%)
+    - "Cute Girls Doing Cute Things"  # 27 titulů (7%)
+    - "Travel"  # 27 titulů (7%)
+    - "Twins"  # 26 titulů (6%)
+    - "Teacher"  # 26 titulů (6%)
 
   # Animační studia jako binární příznaky
   studios:
