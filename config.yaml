@@ -1,0 +1,242 @@
+# ══════════════════════════════════════════════════════════════
+#  Anime Taste Model — konfigurace
+# ══════════════════════════════════════════════════════════════
+
+# Cesta k XML exportu z MyAnimeList
+# Export: https://myanimelist.net/panel.php?go=export
+mal_export: "animelist.xml"
+
+# Adresář pro cache Jikan API odpovědí
+cache_dir: "cache"
+
+# ── Filtrování trénovacích dat ─────────────────────────────────
+training:
+  statuses: ["Completed"]
+  min_score: 1
+  min_episodes: 1
+
+  # Agregace sérií (sequel/prequel → jeden záznam s max skóre)
+  # true  = doporučeno; každá série počítá jako jeden datový bod
+  # false = každá řada zvlášť (původní chování)
+  aggregate_series: true
+
+# ── Příznaky (features) ────────────────────────────────────────
+features:
+  # Žánry z MAL — 1 pokud anime daný žánr má, jinak 0
+  genres:
+    - name: "Romance"
+      mal_id: 22
+    - name: "Drama"
+      mal_id: 8
+    - name: "Comedy"
+      mal_id: 4
+    - name: "Action"
+      mal_id: 1
+    - name: "Fantasy"
+      mal_id: 10
+    - name: "Sci-Fi"
+      mal_id: 24
+    - name: "Slice of Life"
+      mal_id: 36
+    - name: "Mystery"
+      mal_id: 7
+    - name: "Supernatural"
+      mal_id: 37
+    - name: "Sports"
+      mal_id: 30
+    - name: "Ecchi"
+      mal_id: 9
+
+  # Témata z MAL (themes)
+  # skip_if_anilist: true = přeskočí se pokud je AniList zapnutý
+  # a existuje ekvivalentní AniList tag → zabrání double-countingu
+  themes:
+    - name: "School"
+      mal_id: 23
+      skip_if_anilist: true    # AniList má "School" i "School Club"
+    - name: "Harem"
+      mal_id: 35
+      skip_if_anilist: true    # AniList má "Harem"
+    - name: "Isekai"
+      mal_id: 62
+      skip_if_anilist: true    # AniList má "Isekai"
+    - name: "Music"
+      mal_id: 19
+      skip_if_anilist: true    # AniList má "Music"
+    - name: "Military"
+      mal_id: 38
+      skip_if_anilist: true    # AniList má "Military"
+    - name: "Reverse Harem"
+      mal_id: 43
+      skip_if_anilist: false   # žádný přesný AniList ekvivalent
+
+  # Demografie (one-hot, reference = shounen)
+  demographics:
+    - "Shounen"
+    - "Seinen"
+    - "Shoujo"
+    - "Josei"
+
+  # Zdroj předlohy (one-hot, reference = Manga)
+  sources:
+    - "Manga"
+    - "Light novel"
+    - "Visual novel"
+    - "Original"
+    - "Game"
+    - "Novel"
+
+  # Typ média (one-hot, reference = TV)
+  types:
+    - "TV"
+    - "Movie"
+    - "OVA"
+    - "ONA"
+    - "Special"
+
+  # Numerické příznaky (automaticky normalizované)
+  numeric:
+    mal_score:
+      description: "Průměrné skóre komunity MAL"
+      include: true
+    composite_score:
+      description: "Vážený průměr MAL + AniList skóre (lepší pokrytí než jen MAL)"
+      include: false   # zapni pokud máš AniList data (přepíše mal_score informaci)
+    episodes:
+      description: "Počet epizod (log-transformace)"
+      include: true
+      log_transform: true
+    year:
+      description: "Rok vydání"
+      include: true
+
+  # ── Staff příznaky ─────────────────────────────────────────
+  # Binární: 1 pokud daný režisér/scenárista pracoval na titulu.
+  # Průzkum: python main.py --list-staff
+  #
+  # MAL ID zjistíš přes --list-staff nebo na
+  # https://myanimelist.net/people/{mal_id}
+  staff:
+    directors:
+      # Příklady — doplň dle výstupu --list-staff
+      - name: "Ishihara_Tatsuya"   # Clannad, Chuunibyou, Hibike! (KyoAni)
+        mal_id: 2252
+      - name: "Okada_Kenichi"      # Angel Beats, AnoHana, Charlotte
+        mal_id: 4985
+      - name: "Shinkai_Makoto"     # Kimi no Na wa, Tenki no Ko
+        mal_id: 1879
+      - name: "Watanabe_Ayumu"     # Tsuki ga Kirei
+        mal_id: 36491
+      - name: "Andou_Masahiro"     # Seishun Buta Yarou, Sousou no Frieren
+        mal_id: 25805
+      - name: "Hashimoto_Hiroko"   # Horimiya, Boku no Kokoro
+        mal_id: 50516
+
+    writers:
+      # Příklady — doplň dle výstupu --list-staff
+      - name: "Maeda_Jun"          # Clannad, Angel Beats, Charlotte
+        mal_id: 2910
+      - name: "Kamoshida_Hajime"   # Seishun Buta Yarou (original LN autor)
+        mal_id: 37232
+      - name: "Okada_Mari"         # AnoHana, Toradora (series comp)
+        mal_id: 5062
+      - name: "Hayashi_Mori"       # Sousou no Frieren (series comp)
+        mal_id: 47015
+
+# ── Model ──────────────────────────────────────────────────────
+model:
+  type: "ridge"          # ridge | lasso | linear
+  alpha: 1.0             # regularizační síla (vyšší = silnější regularizace)
+  cv_folds: 5            # počet foldů pro cross-validaci
+
+# ── AniList tagy a studia ──────────────────────────────────────
+anilist:
+  enabled: true
+  use_rank: true         # spojitý rank 0–1 (true) nebo binárně (false)
+  min_rank: 0            # minimální rank pro zahrnutí (0–100)
+  exclude_adult:   true
+  exclude_spoiler: true
+
+  # Tagy k zahrnutí — názvy přesně dle AniList (case-sensitive)
+  # Průzkum: python main.py --list-tags
+  tags:
+    # Archetypy ženských postav
+    - "Tsundere"
+    - "Kuudere"
+    - "Dandere"
+    - "Yandere"
+    - "Genki Girl"
+    - "Ojou-sama"
+    - "Tomboy"
+
+    # Narativní vzory v romance
+    - "Love Triangle"
+    - "Slow Romance"
+    - "Childhood Friends"
+    - "Rivals to Lovers"
+    - "Fake Relationship"
+    - "Unrequited Love"
+    - "Age Gap"
+    - "Forbidden Love"
+    - "Sudden Girlfriend Appearance"
+
+    # Emocionální tón
+    - "Tearjerker"
+    - "Feel-good"
+    - "Tragedy"
+    - "Bittersweet"
+
+    # Tematické kategorie
+    - "Coming of Age"
+    - "Philosophy"
+    - "Psychological"
+    - "Found Family"
+    - "Music"
+
+    # Prostředí a zasazení (AniList verze — nahrazují MAL témata)
+    - "School"
+    - "School Club"
+    - "Workplace"
+    - "Isekai"
+    - "Military"
+    - "Time Skip"
+    - "Time Manipulation"
+
+    # Narativní struktura
+    - "Non-linear Storytelling"
+    - "Multiple Protagonists"
+    - "Ensemble Cast"
+
+    # Harem typy (AniList verze)
+    - "Harem"
+    - "Reverse Harem"
+
+  # Animační studia jako binární příznaky
+  studios:
+    - "Kyoto Animation"
+    - "Shaft"
+    - "P.A. Works"
+    - "A-1 Pictures"
+    - "J.C. Staff"
+    - "Brain's Base"
+    - "Doga Kobo"
+    - "feel."
+    - "Wit Studio"
+    - "CloverWorks"
+    - "MAPPA"
+    - "Madhouse"
+
+# ── Cluster analýza (--cluster) ────────────────────────────────
+cluster:
+  # Počet clusterů (přepíše --k z příkazové řádky)
+  k: 6
+  # Počet doporučení na cluster
+  top_per_cluster: 8
+
+# ── Predikce ───────────────────────────────────────────────────
+prediction:
+  mode: "ptw"            # ptw | ids | top_mal
+  custom_ids: []
+  top_mal_count: 100
+  min_mal_score: 7.0
+  show_top: 20
