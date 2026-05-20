@@ -56,19 +56,19 @@ features:
       skip_if_anilist: true    # AniList má "School" i "School Club"
     - name: "Harem"
       mal_id: 35
-      skip_if_anilist: true    # AniList má "Harem"
+      skip_if_anilist: true    # AniList má "Female Harem"
     - name: "Isekai"
       mal_id: 62
       skip_if_anilist: true    # AniList má "Isekai"
     - name: "Music"
       mal_id: 19
-      skip_if_anilist: true    # AniList má "Music"
+      skip_if_anilist: false   # žádný přesný AniList ekvivalent
     - name: "Military"
       mal_id: 38
       skip_if_anilist: true    # AniList má "Military"
     - name: "Reverse Harem"
       mal_id: 43
-      skip_if_anilist: true   # žádný přesný AniList ekvivalent
+      skip_if_anilist: false   # žádný přesný AniList ekvivalent
 
   # Demografie (one-hot, reference = shounen)
   demographics:
@@ -101,7 +101,7 @@ features:
       include: true
     composite_score:
       description: "Vážený průměr MAL + AniList skóre (lepší pokrytí než jen MAL)"
-      include: false   # zapni pokud máš AniList data (přepíše mal_score informaci)
+      include: true   # zapni pokud máš AniList data (přepíše mal_score informaci)
     episodes:
       description: "Počet epizod (log-transformace)"
       include: true
@@ -154,8 +154,8 @@ anilist:
   enabled: true
   use_rank: true         # spojitý rank 0–1 (true) nebo binárně (false)
   min_rank: 0            # minimální rank pro zahrnutí (0–100)
-  exclude_adult:   true
-  exclude_spoiler: true
+  exclude_adult:   false
+  exclude_spoiler: false
 
   # Tagy k zahrnutí — názvy přesně dle AniList (case-sensitive)
   # Průzkum: python main.py --list-tags
@@ -232,6 +232,19 @@ anilist:
     - "Travel"  # 27 titulů (7%)
     - "Twins"  # 26 titulů (6%)
     - "Teacher"  # 26 titulů (6%)
+    - "Ghost"  # 25 titulů (6%)
+    - "Tanned Skin"  # 25 titulů (6%)
+    - "Kemonomimi"  # 25 titulů (6%)
+    - "Femboy"  # 25 titulů (6%)
+    - "Dragons"  # 24 titulů (6%)
+    - "Amnesia"  # 23 titulů (6%)
+    - "Foreign"  # 23 titulů (6%)
+    - "Martial Arts"  # 22 titulů (6%)
+    - "Hikikomori"  # 21 titulů (5%)
+    - "Rural"  # 21 titulů (5%)
+    - "Nekomimi"  # 21 titulů (5%)
+    - "Aliens"  # 21 titulů (5%)
+    - "Idol"  # 21 titulů (5%)
 
   # Animační studia jako binární příznaky
   studios:
