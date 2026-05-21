@@ -1,27 +1,27 @@
 # Anime Taste Model
 
-Analytický systém pro modelování vkusu a predikci hodnocení anime
-na základě dat z MyAnimeList.
+Analytický systém pro modelování vkusu a predikci hodnocení anime na základě dat z MyAnimeList. Kombinuje content-based filtrování (atributy titulů z Jikan API a AniList) s Ridge Regression modelem a shlukovou analýzou vkusu.
 
-## Jak to funguje
+## Architektura
 
 ```
 MAL XML export
     ↓
-Jikan API (žánry, témata, demografie, zdroj, studio, rok, …)
+mal_parser.py       — parsování seznamu a hodnocení
     ↓
-Feature matrix (binární + numerické příznaky)
+jikan_client.py     — žánry, témata, staff, relace sérií (Jikan API)
+anilist_client.py   — granulární tagy, studia, composite score (AniList GraphQL)
     ↓
-Ridge Regression (lineární model s L2 regularizací)
+series_aggregator.py — kolaps sequel/prequel sérií na jeden záznam (max skóre)
     ↓
-Koeficienty příznaků + cross-validace + predikce
+feature_builder.py  — feature matrix (binární + spojité + numerické příznaky)
+    ↓
+model.py            — Ridge Regression, cross-validace, interpretace koeficientů
+    ↓
+cluster_analyzer.py — K-Means shlukování, detekce synergií, per-cluster doporučení
 ```
 
-**Proč Ridge Regression:**
-- Koeficienty jsou přímo interpretovatelné: `Romance = +0.82` znamená,
-  že přítomnost žánru Romance zvyšuje predikci o 0.82 bodu (po normalizaci)
-- L2 regularizace zabraňuje overfittingu na ~200 trénovacích titulech
-- Predikci lze rozložit na příspěvky jednotlivých příznaků
+**Proč Ridge Regression:** koeficienty jsou po StandardScaleru přímo srovnatelné — `genre_Romance = +0.82` a `genre_Ecchi = -0.41` lze porovnat napříč příznaky. L2 regularizace zabraňuje overfittingu na ~200 trénovacích titulech.
 
 ---
 
@@ -38,17 +38,17 @@ Vyžaduje Python 3.10+.
 ## Příprava dat
 
 1. Exportuj MAL seznam: https://myanimelist.net/panel.php?go=export
-2. Ulož XML soubor do složky projektu
-3. Nastav cestu v `config.yaml`:
+2. Ulož XML soubor do složky projektu jako `animelist.xml`
+3. Ověř cestu v `config.yaml`:
    ```yaml
    mal_export: "animelist.xml"
    ```
 
 ---
 
-## Spuštění
+## Spuštění — přehled příkazů
 
-### Základní spuštění (predikce PTW listu)
+### Základní predikce PTW listu
 ```bash
 python main.py
 ```
@@ -69,16 +69,48 @@ python main.py --mode top_mal
 python main.py --train-only
 ```
 
-### Vysvětlení konkrétní predikce
+### Vysvětlení predikce pro konkrétní titul
 ```bash
 python main.py --explain 5114
 # Zobrazí příspěvek každého příznaku k predikci Steins;Gate
 ```
 
+### Analýza příznaků trénovacích dat
+```bash
+python main.py --analyze
+# Pro každý příznak: koeficient + konkrétní tituly které ho pohánějí
+# Pomáhá odhalit spurious correlations (např. proč Military má kladný koeficient)
+```
+
+### Cluster analýza vkusu + per-cluster doporučení
+```bash
+python main.py --cluster          # K=6 (default), kandidáti z PTW
+python main.py --cluster --k 5    # jiný počet clusterů
+python main.py --cluster --mode ids --ids 5114 32979
+```
+
+### Průzkum AniList tagů (výstup ready-to-paste do config.yaml)
+```bash
+python main.py --list-tags
+python main.py --list-tags --list-tags-min 5   # práh: min. 5 titulů
+python main.py --list-tags --list-tags-n 100   # zobraz top 100 tagů
+```
+
+### Průzkum režisérů a scenáristů (výstup ready-to-paste do config.yaml)
+```bash
+python main.py --list-staff
+python main.py --list-staff --list-tags-min 3  # jen ti s 3+ tituly
+```
+
+### Vypnutí agregace sérií
+```bash
+python main.py --no-aggregate   # každá řada série jako samostatný záznam
+```
+
 ### Ladění regularizace
 ```bash
-python main.py --alpha 0.1    # slabší regularizace (může přefitovat)
-python main.py --alpha 10.0   # silnější regularizace (konzervativnější)
+python main.py --alpha 0.1    # slabší regularizace
+python main.py --alpha 10.0   # silnější regularizace
 ```
 
 ---
@@ -90,58 +122,47 @@ python main.py --alpha 10.0   # silnější regularizace (konzervativnější)
 ══════════════════════════════════════════════════════════════
   EVALUACE MODELU
 ══════════════════════════════════════════════════════════════
-  Trénovacích titulů:  187
-  Počet příznaků:      42
+  Trénovacích titulů:  143   (po agregaci sérií)
+  Počet příznaků:      78    (MAL + AniList tagy + staff)
 
-  Cross-validace (Ridge, 1.0):
-    RMSE: 0.824 ± 0.091
-    MAE:  0.631
+  Cross-validace (Ridge, alpha=1.0):
+    RMSE: 0.81 ± 0.09
+    MAE:  0.62
 
-  Intercept (baseline): 8.142
-══════════════════════════════════════════════════════════════
+  Intercept (baseline): 8.14
 ```
 
 ### Koeficienty modelu
 ```
-příznak                koeficient   směr
-─────────────────────  ──────────   ────────────────────
-genre_Romance           +0.8241     ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-demo_Seinen             +0.4102     ▲▲▲▲▲▲▲
-source_Light novel      +0.3817     ▲▲▲▲▲▲
-source_Visual novel     +0.3205     ▲▲▲▲▲
-genre_Drama             +0.2991     ▲▲▲▲
-genre_Ecchi             -0.4130     ▼▼▼▼▼▼▼
-theme_Harem             -0.2011     ▼▼▼
+příznak                    koeficient   směr
+─────────────────────────  ──────────   ────────────────
+genre_Romance               +0.8241     ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+anilist_Tearjerker          +0.6103     ▲▲▲▲▲▲▲▲▲▲▲▲
+writer_Maeda_Jun            +0.5821     ▲▲▲▲▲▲▲▲▲▲▲
+source_Visual novel         +0.3205     ▲▲▲▲▲
+genre_Drama                 +0.2991     ▲▲▲▲
+genre_Ecchi                 -0.4130     ▼▼▼▼▼▼▼
 ```
 
-### Predikce
+### Cluster analýza
 ```
-predikce   titul                                      MAL skóre   žánry
-─────────  ─────────────────────────────────────────  ─────────   ──────────────────────
-9.21       Plastic Memories                            8.30        Drama, Romance, Sci-Fi
-8.94       Angel Beats!                                8.13        Action, Drama, Comedy
-8.71       Ef - A Tale of Memories                     8.00        Drama, Romance
-```
+CLUSTER 1: Romance + Drama + Tearjerker + LN ✦
+────────────────────────────────────────────────
+Titulů: 18  |  Tvůj průměr: 9.3  |  MAL průměr: 8.1  |  Diferenciál: +1.2 ▲▲▲
 
-### Vysvětlení predikce
-```
-příznak              hodnota   koef      příspěvek
-───────────────────  ───────   ───────   ─────────
-genre_Romance              1   +0.8241   +0.7190
-genre_Drama                1   +0.2991   +0.2614
-source_Visual novel        1   +0.3205   +0.2801
-mal_score               8.30   +0.1923   +0.1541
-genre_Ecchi                0   -0.4130   +0.0000
+Synergie:  Romance + Tearjerker: diff=+1.8  (synergie: +0.7)
+
+Doporučení:
+  9.2   White Album 2              8.31   97%
+  8.9   Ef - A Tale of Memories    8.00   94%
 ```
 
 ---
 
-## Ladění modelu
+## Konfigurace — klíčové sekce config.yaml
 
-Edituj `config.yaml`:
-
+### Příznaky
 ```yaml
-# Přidej/odeber příznaky
 features:
   genres:
     - name: "Romance"
@@ -149,36 +170,111 @@ features:
     # - name: "Ecchi"    ← zakomentuj pro vyloučení
     #   mal_id: 9
 
-# Zesil/oslab regularizaci
-model:
-  alpha: 2.0     # vyšší = konzervativnější koeficienty
+  themes:
+    - name: "Military"
+      mal_id: 38
+      skip_if_anilist: true   # AniList ekvivalent přebírá tento příznak
+                               # → zabraňuje double-countingu
 
-# Filtruj trénovací data
+  numeric:
+    mal_score:
+      include: true
+    composite_score:
+      include: false   # vážený průměr MAL + AniList; zapni pokud máš AniList data
+
+  staff:
+    directors:
+      - name: "Andou_Masahiro"   # Seishun Buta Yarou, Sousou no Frieren
+        mal_id: 25805
+    writers:
+      - name: "Maeda_Jun"        # Clannad, Angel Beats!
+        mal_id: 2910
+```
+
+### AniList tagy
+```yaml
+anilist:
+  enabled: true
+  use_rank: true        # spojitý rank 0–1 (přesnější než binárně)
+  min_rank: 0
+  tags:
+    - "Tsundere"        # archetyp postavy
+    - "Love Triangle"   # narativní vzor
+    - "Tearjerker"      # emocionální tón
+    # ... (průzkum: python main.py --list-tags)
+  studios:
+    - "Kyoto Animation"
+    - "Shaft"
+```
+
+### Agregace sérií
+```yaml
 training:
-  min_score: 5   # ignoruj tituly se skóre pod 5
+  aggregate_series: true   # sequel/prequel → jeden záznam s max skóre
+                            # doporučeno: zabraňuje umělé inflaci dat
+```
+
+### Cluster analýza
+```yaml
+cluster:
+  k: 6                  # počet clusterů
+  top_per_cluster: 8    # doporučení na cluster
+```
+
+---
+
+## Soubory
+
+| Soubor                  | Účel                                                                 |
+|-------------------------|----------------------------------------------------------------------|
+| `main.py`               | CLI orchestrátor — vstupní bod, propojuje všechny moduly             |
+| `config.yaml`           | Konfigurace příznaků, modelu, AniList tagů, staff, predikce          |
+| `mal_parser.py`         | Parser MAL XML exportu → list `MalEntry` dataclass                  |
+| `jikan_client.py`       | Jikan API v4 klient (cache, rate limiting, staff průzkum)            |
+| `anilist_client.py`     | AniList GraphQL klient (batch query, tag průzkum, composite score)   |
+| `feature_builder.py`    | Feature matrix: MAL žánry + AniList tagy + staff + numerické         |
+| `series_aggregator.py`  | Union-Find přes sequel/prequel vazby → kolaps sérií na max skóre    |
+| `model.py`              | Ridge Regression, cross-validace, koeficienty, explain, analýza      |
+| `cluster_analyzer.py`   | K-Means, diferenciální skóre, synergie, per-cluster doporučení       |
+| `requirements.txt`      | Python závislosti                                                    |
+| `cache/`                | Cache API odpovědí — vytvoří se automaticky, **není v gitu**         |
+| `animelist.xml`         | Tvůj MAL export — **není v gitu** (osobní data)                     |
+| `predictions.csv`       | Výstup predikce — generuje se při spuštění                          |
+| `clusters.csv`          | Výstup cluster analýzy — generuje se při `--cluster`                |
+
+---
+
+## Doporučený postup prvního spuštění
+
+```bash
+# 1. Průzkum dostupných AniList tagů pro tvá data
+python main.py --list-tags
+
+# 2. Průzkum režisérů a scenáristů
+python main.py --list-staff
+
+# 3. Uprav config.yaml — přidej/odeber tagy a staff dle výsledků
+
+# 4. Trénink + evaluace
+python main.py --train-only
+
+# 5. Analýza příznaků — zkontroluj koeficienty a jejich zdůvodnění
+python main.py --train-only --analyze
+
+# 6. Cluster analýza + doporučení
+python main.py --cluster
+
+# 7. Plná predikce PTW
+python main.py
 ```
 
 ---
 
 ## Cache
 
-Jikan API odpovědi jsou uloženy do složky `cache/` jako JSON soubory.
-Opakované spuštění je proto rychlé (bez síťových volání).
+Jikan a AniList odpovědi jsou cachované v `cache/jikan/` a `cache/anilist/` jako JSON. Opakované spuštění je okamžité.
 
-Pro vymazání cache: `rm -rf cache/`
-
----
-
-## Soubory
-
-| Soubor             | Účel                                           |
-|--------------------|------------------------------------------------|
-| `main.py`          | Hlavní skript (CLI + orchestrace)              |
-| `config.yaml`      | Konfigurace příznaků, modelu, predikce         |
-| `mal_parser.py`    | Parser MAL XML exportu                         |
-| `jikan_client.py`  | Jikan API klient (cache + rate limiting)       |
-| `feature_builder.py` | Sestavení feature matrix                     |
-| `model.py`         | Ridge Regression + evaluace + interpretace     |
-| `requirements.txt` | Python závislosti                              |
-| `cache/`           | Cache Jikan API odpovědí (vytvoří se auto)     |
-| `predictions.csv`  | Export výsledků predikce (vytvoří se po spuštění) |
+```bash
+rm -rf cache/          # smaž celou cache (vynutí nové stažení)
+rm -rf cache/anilist/  # smaž jen AniList cache
+```
