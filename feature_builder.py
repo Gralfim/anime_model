@@ -144,14 +144,17 @@ def anime_to_features(
     anime_data:    dict,
     fc:            FeatureConfig,
     anilist_data:  Optional[dict] = None,
+    staff_data:    Optional[list] = None,
 ) -> dict:
     """
-    Převede Jikan anime_data (+ volitelně AniList data) na dict příznaků.
+    Převede Jikan anime_data (+ volitelně AniList + staff data) na dict příznaků.
 
     Parametry:
         anime_data   — Jikan /anime/{id}/full data (povinné)
         fc           — konfigurace příznaků
-        anilist_data — AniList Media data (volitelné, None = bez AniList příznaků)
+        anilist_data — AniList Media data (volitelné)
+        staff_data   — Jikan /anime/{id}/staff data (volitelné)
+                       list [{person: {mal_id, name}, positions: [...]}, ...]
 
     Vrací dict {feature_name: hodnota} nebo None pokud chybí Jikan data.
     """
@@ -226,19 +229,18 @@ def anime_to_features(
                 pass
         feats["year"] = float(year) if year else 2010.0
 
-    # ── Staff příznaky (z Jikan) ──────────────────────────────────────────────
+    # ── Staff příznaky (z Jikan /anime/{id}/staff) ───────────────────────────
     # Binární: 1 pokud daný režisér/scenárista pracoval na titulu.
-    # Jikan /full vrací staff pole: [{person: {mal_id, name}, positions: [...]}]
-    # Pozice jsou volné texty — hledáme klíčová slova pro direktora/scenáristu.
-    DIRECTOR_POSITIONS  = {"director", "series director"}
-    WRITER_POSITIONS    = {"script", "series composition", "screenplay",
-                           "original creator", "original story"}
+    # staff_data pochází ze samostatného Jikan endpointu (ne z /full).
+    DIRECTOR_POSITIONS = {"director", "series director"}
+    WRITER_POSITIONS   = {"script", "series composition", "screenplay",
+                          "original creator", "original story"}
 
     staff_director_ids: set[int] = set()
     staff_writer_ids:   set[int] = set()
-    for entry in anime_data.get("staff", []):
-        person     = entry.get("person") or {}
-        person_id  = person.get("mal_id")
+    for entry in (staff_data or []):
+        person    = entry.get("person") or {}
+        person_id = person.get("mal_id")
         if not person_id:
             continue
         positions = {p.lower() for p in (entry.get("positions") or [])}
@@ -304,10 +306,11 @@ def anime_to_features(
 
 
 def build_feature_matrix(
-    entries:      list,           # list[MalEntry]
-    jikan_data:   dict,           # {mal_id: jikan_data}
+    entries:      list,               # list[MalEntry]
+    jikan_data:   dict,               # {mal_id: jikan_data}
     fc:           FeatureConfig,
-    anilist_data: dict | None = None,   # {mal_id: anilist_data}, volitelné
+    anilist_data: dict | None = None, # {mal_id: anilist_data}
+    staff_data:   dict | None = None, # {mal_id: [staff_entries]}
 ) -> tuple[pd.DataFrame, list[int], list[str]]:
     """
     Sestaví feature matrix pro trénovací data.
@@ -317,6 +320,7 @@ def build_feature_matrix(
         jikan_data   — Jikan data {mal_id: data}
         fc           — konfigurace příznaků
         anilist_data — AniList data {mal_id: data} (None = bez AniList)
+        staff_data   — Jikan staff data {mal_id: [entries]} (None = bez staff)
 
     Výstup:
         X        — DataFrame příznaků
@@ -333,8 +337,9 @@ def build_feature_matrix(
             skipped += 1
             continue
 
-        al_data = (anilist_data or {}).get(entry.mal_id)
-        feats   = anime_to_features(jikan_data[entry.mal_id], fc, al_data)
+        al_data  = (anilist_data or {}).get(entry.mal_id)
+        st_data  = (staff_data   or {}).get(entry.mal_id)
+        feats    = anime_to_features(jikan_data[entry.mal_id], fc, al_data, st_data)
         if feats is None:
             skipped += 1
             continue
@@ -360,10 +365,11 @@ def build_feature_matrix(
 
 
 def build_prediction_matrix(
-    jikan_data_list:  list[dict],      # list Jikan dat
+    jikan_data_list:  list[dict],
     fc:               FeatureConfig,
-    feature_columns:  list[str],       # musí odpovídat sloupcům z tréninku
-    anilist_data:     dict | None = None,   # {mal_id: anilist_data}
+    feature_columns:  list[str],
+    anilist_data:     dict | None = None,
+    staff_data:       dict | None = None,
 ) -> tuple[pd.DataFrame, list[int], list[str]]:
     """
     Sestaví feature matrix pro predikci (nová anime).
@@ -373,6 +379,7 @@ def build_prediction_matrix(
         fc              — konfigurace příznaků
         feature_columns — sloupce z trénovacího X (zachovává pořadí)
         anilist_data    — AniList data {mal_id: data} (None = bez AniList)
+        staff_data      — Jikan staff data {mal_id: [entries]} (None = bez staff)
 
     Výstup:
         X       — DataFrame příznaků (stejná struktura jako trénovací X)
@@ -388,7 +395,8 @@ def build_prediction_matrix(
             continue
         mal_id  = data.get("mal_id")
         al_data = (anilist_data or {}).get(mal_id) if mal_id else None
-        feats   = anime_to_features(data, fc, al_data)
+        st_data = (staff_data   or {}).get(mal_id) if mal_id else None
+        feats   = anime_to_features(data, fc, al_data, st_data)
         if feats is None:
             continue
         rows.append(feats)

@@ -299,6 +299,26 @@ class AniListClient:
                 studios.append(node["name"])
         return studios
 
+    def list_all_studios(self, mal_ids: list[int]) -> dict[str, int]:
+        """
+        Vrátí frekvenční slovník animačních studií pro zadaná MAL ID.
+        Počítá počet unikátních titulů (ne výskytů) — ochrana před duplicitami.
+        """
+        from collections import Counter
+        counter: Counter = Counter()
+
+        data = self.get_anime_batch(mal_ids, show_progress=False)
+        for anilist_data in data.values():
+            seen: set[str] = set()
+            for node in anilist_data.get("studios", {}).get("nodes", []):
+                if node.get("isAnimationStudio"):
+                    name = node["name"]
+                    if name not in seen:
+                        counter[name] += 1
+                        seen.add(name)
+
+        return dict(counter)
+
     def list_all_tags(self, mal_ids: list[int]) -> dict[str, int]:
         """
         Projde data pro zadaná MAL ID a vrátí frekvenční slovník

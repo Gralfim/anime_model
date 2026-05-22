@@ -179,11 +179,84 @@ def run(cfg: dict, args: argparse.Namespace) -> None:
                 print(f"    - name: \"{safe}\"  # {name} ({cnt} titulů, {pos})")
                 print(f"      mal_id: {pid}")
         return
+
+    # ── Speciální příkaz: průzkum MAL příznaků ───────────────────────────────
+    if args.list_mal:
+        print("\n[ℹ] Průzkum MAL příznaků pro trénovací tituly…")
+        jikan_data_mal = jikan.get_anime_batch(train_ids)
+        mal_feats = jikan.list_mal_features(train_ids)
+        total = len(jikan_data_mal)
+
+        SECTIONS = [
+            ("genres",       "Žánry → features.genres",
+             '      - name: "{name}"\n        mal_id: {id}'),
+            ("themes",       "Témata → features.themes (přidej skip_if_anilist kde vhodné)",
+             '      - name: "{name}"\n        mal_id: {id}\n        skip_if_anilist: false'),
+            ("demographics", "Demografie → features.demographics",
+             '      - "{name}"'),
+            ("sources",      "Zdroje předlohy → features.sources",
+             '      - "{name}"'),
+            ("types",        "Typy médií → features.types",
+             '      - "{name}"'),
+        ]
+
+        for key, header, yaml_fmt in SECTIONS:
+            data_raw = mal_feats[key]
+            print(f"\n  ── {header} ──")
+            if key in ("genres", "themes"):
+                items = sorted(data_raw.items(), key=lambda x: -x[1])
+                rows = [[cnt, f"{cnt/max(total,1)*100:.0f}%", mid, name]
+                        for (mid, name), cnt in items]
+                print(tabulate(rows, headers=["počet", "%", "MAL ID", "název"], tablefmt="simple"))
+                print(f"\n  # ─── Zkopíruj do features.{key} v config.yaml ───")
+                for (mid, name), cnt in items:
+                    print(f"    # {name} ({cnt} titulů, {cnt/max(total,1)*100:.0f}%)")
+                    print(yaml_fmt.format(name=name, id=mid))
+            else:
+                items = sorted(data_raw.items(), key=lambda x: -x[1])
+                rows = [[cnt, f"{cnt/max(total,1)*100:.0f}%", name] for name, cnt in items]
+                print(tabulate(rows, headers=["počet", "%", "hodnota"], tablefmt="simple"))
+                print(f"\n  # ─── Zkopíruj do features.{key} v config.yaml ───")
+                for name, cnt in items:
+                    print(f"    # {name} ({cnt} titulů)")
+                    print(yaml_fmt.format(name=name, id=None))
+        return
+
+    # ── Speciální příkaz: průzkum AniList studií ──────────────────────────────
+    if args.list_studios:
+        print("\n[ℹ] Průzkum AniList animačních studií pro trénovací tituly…")
+        al_st         = anilist.get_anime_batch(train_ids)
+        studio_counts = anilist.list_all_studios(train_ids)
+        total         = len(al_st)
+        min_count     = getattr(args, "list_tags_min", None) or 2
+        top_n         = getattr(args, "list_tags_n",   None) or 50
+
+        sorted_st = sorted(studio_counts.items(), key=lambda x: -x[1])[:top_n]
+        print(f"\n  Top {top_n} animačních studií (z {total} titulů):\n")
+        rows = [[cnt, f"{cnt/max(total,1)*100:.0f}%", name] for name, cnt in sorted_st]
+        print(tabulate(rows, headers=["počet", "%", "studio"], tablefmt="simple"))
+        print(f"\n  # ─── Zkopíruj do anilist.studios v config.yaml ─────────")
+        print(f"  # ─── (práh: {min_count}+ titulů) ──────────────────────────")
+        print()
+        for name, cnt in sorted_st:
+            if cnt < min_count:
+                break
+            print(f'    - "{name}"  # {cnt} titulů ({cnt/max(total,1)*100:.0f}%)')
+        return
+
     # ── 3. Stažení Jikan dat ───────────────────────────────────────────────────
     print("\n[3/6] Stahování Jikan dat…")
     jikan_data = jikan.get_anime_batch(train_ids)
 
-    # ── 3b. Agregace sérií ────────────────────────────────────────────────────
+    # ── 3b. Stažení staff dat ────────────────────────────────────────────────
+    staff_data_train = None
+    if fc.staff_directors or fc.staff_writers:
+        print("\n  Stahování staff dat (režiséři/scenáristé)…")
+        staff_data_train = jikan.get_staff_batch(train_ids)
+    else:
+        print("\n  Staff data: přeskočeno (žádní v config.yaml)")
+
+    # ── 3c. Agregace sérií ────────────────────────────────────────────────────
     do_aggregate = (
         cfg.get("training", {}).get("aggregate_series", True)
         and not args.no_aggregate
@@ -218,7 +291,7 @@ def run(cfg: dict, args: argparse.Namespace) -> None:
         cfg["model"]["alpha"] = args.alpha
 
     X, scores, mal_ids_train = build_feature_matrix(
-        train_entries, jikan_data, fc, al_data_train
+        train_entries, jikan_data, fc, al_data_train, staff_data_train
     )
     al_count = sum(1 for mid in mal_ids_train if (al_data_train or {}).get(mid))
     print(f"  Feature matrix: {X.shape[0]} titulů × {X.shape[1]} příznaků")
@@ -293,8 +366,13 @@ def run(cfg: dict, args: argparse.Namespace) -> None:
                 cand_al_ids = [d["mal_id"] for d in cand_data if d.get("mal_id")]
                 cand_al     = anilist.get_anime_batch(cand_al_ids)
 
+            cand_staff = None
+            if fc.staff_directors or fc.staff_writers:
+                cand_staff = jikan.get_staff_batch(
+                    [d["mal_id"] for d in cand_data if d.get("mal_id")]
+                )
             Xc, c_ids, c_titles_list = build_prediction_matrix(
-                cand_data, fc, list(X.columns), cand_al
+                cand_data, fc, list(X.columns), cand_al, cand_staff
             )
             c_titles_map = dict(zip(c_ids, c_titles_list))
 
@@ -328,8 +406,9 @@ def run(cfg: dict, args: argparse.Namespace) -> None:
         expl_anilist = anilist.get_anime_batch(explain_ids) if fc.anilist.enabled else None
         expl_list    = [expl_jikan[i] for i in explain_ids if i in expl_jikan]
 
+        expl_staff = jikan.get_staff_batch(explain_ids) if (fc.staff_directors or fc.staff_writers) else None
         Xe, xe_ids, xe_titles = build_prediction_matrix(
-            expl_list, fc, list(X.columns), expl_anilist
+            expl_list, fc, list(X.columns), expl_anilist, expl_staff
         )
         preds = predict(results, Xe)
 
@@ -397,13 +476,16 @@ def run(cfg: dict, args: argparse.Namespace) -> None:
         print("  Žádná data k predikci.")
         return
 
-    pred_al_dict = None
+    pred_al_dict   = None
+    pred_staff_dict = None
+    pred_mal_ids = [d["mal_id"] for d in pred_data_list if d.get("mal_id")]
     if fc.anilist.enabled:
-        pred_al_ids  = [d["mal_id"] for d in pred_data_list if d.get("mal_id")]
-        pred_al_dict = anilist.get_anime_batch(pred_al_ids)
+        pred_al_dict = anilist.get_anime_batch(pred_mal_ids)
+    if fc.staff_directors or fc.staff_writers:
+        pred_staff_dict = jikan.get_staff_batch(pred_mal_ids)
 
     Xp, p_ids, p_titles = build_prediction_matrix(
-        pred_data_list, fc, list(X.columns), pred_al_dict
+        pred_data_list, fc, list(X.columns), pred_al_dict, pred_staff_dict
     )
     preds         = predict(results, Xp)
     preds_clipped = np.clip(preds, 1, 10)
@@ -462,6 +544,8 @@ def main():
     parser.add_argument("--train-only",   action="store_true",   help="Jen trénuj model, bez predikce")
     parser.add_argument("--list-tags",    action="store_true",   help="Průzkum AniList tagů + YAML ready-to-paste výstup")
     parser.add_argument("--list-staff",   action="store_true",   help="Průzkum režisérů/scenáristů + YAML ready-to-paste výstup")
+    parser.add_argument("--list-mal",     action="store_true",   help="Průzkum MAL příznaků (genres, themes, demographics, sources, types)")
+    parser.add_argument("--list-studios", action="store_true",   help="Průzkum AniList animačních studií + YAML ready-to-paste výstup")
     parser.add_argument("--list-tags-n",  type=int,              help="Počet tagů/staffu ve výpisu (default: 80/30)")
     parser.add_argument("--list-tags-min",type=int,              help="Minimální počet titulů pro zahrnutí do YAML (default: auto)")
     parser.add_argument("--no-aggregate", action="store_true",   help="Vypni agregaci sérií")

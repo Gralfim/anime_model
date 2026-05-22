@@ -102,6 +102,44 @@ class JikanClient:
             return result["data"]
         return None
 
+    def get_anime_staff(self, mal_id: int) -> list[dict]:
+        """
+        Vrátí staff pro anime dle MAL ID (samostatný endpoint /anime/{id}/staff).
+
+        Vrací list objektů:
+            [{"person": {"mal_id": ..., "name": ...}, "positions": [...]}, ...]
+
+        Cachováno odděleně od /full dat pod klíčem "staff_{mal_id}".
+        """
+        result = self._get(f"anime/{mal_id}/staff")
+        if result and "data" in result:
+            return result["data"]
+        return []
+
+    def get_staff_batch(
+        self,
+        mal_ids: list[int],
+        show_progress: bool = True,
+    ) -> dict[int, list[dict]]:
+        """
+        Stáhne staff data pro seznam MAL ID.
+        Vrací dict {mal_id: [staff_entries]}.
+        """
+        results = {}
+        total   = len(mal_ids)
+
+        for i, mal_id in enumerate(mal_ids):
+            if show_progress and i % 10 == 0:
+                print(f"  Staff data: {i}/{total}…", end="\r")
+            staff = self.get_anime_staff(int(mal_id))
+            results[mal_id] = staff  # může být prázdný list
+
+        if show_progress:
+            non_empty = sum(1 for v in results.values() if v)
+            print(f"  Staff stažen: {non_empty}/{total} titulů s daty.          ")
+
+        return results
+
     def get_top_anime(self, limit: int = 100, min_score: float = 7.0) -> list[dict]:
         """
         Stáhne top anime z MAL seřazené podle skóre.
@@ -156,9 +194,9 @@ class JikanClient:
         directors: dict[int, list] = defaultdict(lambda: ["", "", 0])
         writers:   dict[int, list] = defaultdict(lambda: ["", "", 0])
 
-        data = self.get_anime_batch(mal_ids, show_progress=show_progress)
-        for anime_data in data.values():
-            for entry in anime_data.get("staff", []):
+        staff_data = self.get_staff_batch(mal_ids, show_progress=show_progress)
+        for staff_list in staff_data.values():
+            for entry in staff_list:
                 person    = entry.get("person") or {}
                 person_id = person.get("mal_id")
                 name      = person.get("name", "")
@@ -183,6 +221,54 @@ class JikanClient:
             )
 
         return {"directors": to_list(directors), "writers": to_list(writers)}
+
+    def list_mal_features(
+        self,
+        mal_ids: list[int],
+    ) -> dict[str, dict]:
+        """
+        Projde Jikan data pro zadaná MAL ID a vrátí frekvenční přehledy
+        pro genres, themes, demographics, sources a types.
+
+        Vrací:
+            {
+              "genres":       {(mal_id, name): count},
+              "themes":       {(mal_id, name): count},
+              "demographics": {name: count},
+              "sources":      {source: count},
+              "types":        {type: count},
+            }
+        """
+        from collections import Counter
+
+        genres       = Counter()  # (mal_id, name) → count
+        themes       = Counter()
+        demographics = Counter()  # name → count
+        sources      = Counter()
+        types        = Counter()
+
+        data = self.get_anime_batch(mal_ids, show_progress=False)
+        for anime in data.values():
+            for g in anime.get("genres", []):
+                genres[(g["mal_id"], g["name"])] += 1
+            for t in anime.get("themes", []):
+                themes[(t["mal_id"], t["name"])] += 1
+            for d in anime.get("demographics", []):
+                demographics[d["name"]] += 1
+            src = (anime.get("source") or "").strip()
+            if src:
+                sources[src] += 1
+            typ = (anime.get("type") or "").strip()
+            if typ:
+                types[typ] += 1
+
+        return {
+            "genres":       dict(genres),
+            "themes":       dict(themes),
+            "demographics": dict(demographics),
+            "sources":      dict(sources),
+            "types":        dict(types),
+        }
 
     def get_anime_batch(
         self,
