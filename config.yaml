@@ -24,75 +24,278 @@ training:
 features:
   # Žánry z MAL — 1 pokud anime daný žánr má, jinak 0
   genres:
-    - name: "Romance"
-      mal_id: 22
-    - name: "Drama"
-      mal_id: 8
-    - name: "Comedy"
-      mal_id: 4
-    - name: "Action"
-      mal_id: 1
-    - name: "Fantasy"
-      mal_id: 10
-    - name: "Sci-Fi"
-      mal_id: 24
-    - name: "Slice of Life"
-      mal_id: 36
-    - name: "Mystery"
-      mal_id: 7
-    - name: "Supernatural"
-      mal_id: 37
-    - name: "Sports"
-      mal_id: 30
-    - name: "Ecchi"
-      mal_id: 9
+    # Comedy (206 titulů, 51%)
+      - name: "Comedy"
+        mal_id: 4
+    # Romance (196 titulů, 48%)
+      - name: "Romance"
+        mal_id: 22
+    # Fantasy (95 titulů, 23%)
+      - name: "Fantasy"
+        mal_id: 10
+    # Drama (93 titulů, 23%)
+      - name: "Drama"
+        mal_id: 8
+    # Action (93 titulů, 23%)
+      - name: "Action"
+        mal_id: 1
+    # Ecchi (87 titulů, 21%)
+      - name: "Ecchi"
+        mal_id: 9
+    # Supernatural (46 titulů, 11%)
+      - name: "Supernatural"
+        mal_id: 37
+    # Adventure (44 titulů, 11%)
+      - name: "Adventure"
+        mal_id: 2
+    # Sci-Fi (35 titulů, 9%)
+      - name: "Sci-Fi"
+        mal_id: 24
+    # Mystery (17 titulů, 4%)
+      - name: "Mystery"
+        mal_id: 7
+    # Suspense (14 titulů, 3%)
+      - name: "Suspense"
+        mal_id: 41
+    # Award Winning (13 titulů, 3%)
+      - name: "Award Winning"
+        mal_id: 46
+    # Gourmet (9 titulů, 2%)
+      - name: "Gourmet"
+        mal_id: 47
+    # Sports (5 titulů, 1%)
+      - name: "Sports"
+        mal_id: 30
+    # Slice of Life (4 titulů, 1%)
+      - name: "Slice of Life"
+        mal_id: 36
+    # Erotica (3 titulů, 1%)
+      - name: "Erotica"
+        mal_id: 49
+    # Horror (2 titulů, 0%)
+      - name: "Horror"
+        mal_id: 14
+    # Girls Love (1 titulů, 0%)
+      - name: "Girls Love"
+        mal_id: 26
 
   # Témata z MAL (themes)
   # skip_if_anilist: true = přeskočí se pokud je AniList zapnutý
   # a existuje ekvivalentní AniList tag → zabrání double-countingu
   themes:
-    - name: "School"
-      mal_id: 23
-      skip_if_anilist: true    # AniList má "School" i "School Club"
-    - name: "Harem"
-      mal_id: 35
-      skip_if_anilist: true    # AniList má "Harem"
-    - name: "Isekai"
-      mal_id: 62
-      skip_if_anilist: true    # AniList má "Isekai"
-    - name: "Music"
-      mal_id: 19
-      skip_if_anilist: true    # AniList má "Music"
-    - name: "Military"
-      mal_id: 38
-      skip_if_anilist: true    # AniList má "Military"
-    - name: "Reverse Harem"
-      mal_id: 43
-      skip_if_anilist: false   # žádný přesný AniList ekvivalent
+    # School (176 titulů, 43%)
+      - name: "School"
+        mal_id: 23
+        skip_if_anilist: false
+    # Harem (95 titulů, 23%)
+      - name: "Harem"
+        mal_id: 35
+        skip_if_anilist: false
+    # Isekai (43 titulů, 11%)
+      - name: "Isekai"
+        mal_id: 62
+        skip_if_anilist: false
+    # Urban Fantasy (25 titulů, 6%)
+      - name: "Urban Fantasy"
+        mal_id: 82
+        skip_if_anilist: false
+    # Love Polygon (20 titulů, 5%)
+      - name: "Love Polygon"
+        mal_id: 64
+        skip_if_anilist: false
+    # Parody (20 titulů, 5%)
+      - name: "Parody"
+        mal_id: 20
+        skip_if_anilist: false
+    # Military (17 titulů, 4%)
+      - name: "Military"
+        mal_id: 38
+        skip_if_anilist: false
+    # Otaku Culture (16 titulů, 4%)
+      - name: "Otaku Culture"
+        mal_id: 69
+        skip_if_anilist: false
+    # Adult Cast (15 titulů, 4%)
+      - name: "Adult Cast"
+        mal_id: 50
+        skip_if_anilist: false
+    # Reincarnation (15 titulů, 4%)
+      - name: "Reincarnation"
+        mal_id: 72
+        skip_if_anilist: false
+    # CGDCT (12 titulů, 3%)
+      - name: "CGDCT"
+        mal_id: 52
+        skip_if_anilist: false
+    # Video Game (12 titulů, 3%)
+      - name: "Video Game"
+        mal_id: 79
+        skip_if_anilist: false
+    # Super Power (11 titulů, 3%)
+      - name: "Super Power"
+        mal_id: 31
+        skip_if_anilist: false
+    # Psychological (11 titulů, 3%)
+      - name: "Psychological"
+        mal_id: 40
+        skip_if_anilist: false
+    # Martial Arts (11 titulů, 3%)
+      - name: "Martial Arts"
+        mal_id: 17
+        skip_if_anilist: false
+    # Time Travel (9 titulů, 2%)
+      - name: "Time Travel"
+        mal_id: 78
+        skip_if_anilist: false
+    # Magical Sex Shift (8 titulů, 2%)
+      - name: "Magical Sex Shift"
+        mal_id: 65
+        skip_if_anilist: false
+    # Gag Humor (7 titulů, 2%)
+      - name: "Gag Humor"
+        mal_id: 57
+        skip_if_anilist: false
+    # Music (6 titulů, 1%)
+      - name: "Music"
+        mal_id: 19
+        skip_if_anilist: false
+    # Mythology (5 titulů, 1%)
+      - name: "Mythology"
+        mal_id: 6
+        skip_if_anilist: false
+    # Childcare (5 titulů, 1%)
+      - name: "Childcare"
+        mal_id: 53
+        skip_if_anilist: false
+    # Vampire (4 titulů, 1%)
+      - name: "Vampire"
+        mal_id: 32
+        skip_if_anilist: false
+    # Educational (4 titulů, 1%)
+      - name: "Educational"
+        mal_id: 56
+        skip_if_anilist: false
+    # Historical (4 titulů, 1%)
+      - name: "Historical"
+        mal_id: 13
+        skip_if_anilist: false
+    # Anthropomorphic (4 titulů, 1%)
+      - name: "Anthropomorphic"
+        mal_id: 51
+        skip_if_anilist: false
+    # Strategy Game (3 titulů, 1%)
+      - name: "Strategy Game"
+        mal_id: 11
+        skip_if_anilist: false
+    # Workplace (3 titulů, 1%)
+      - name: "Workplace"
+        mal_id: 48
+        skip_if_anilist: false
+    # Performing Arts (3 titulů, 1%)
+      - name: "Performing Arts"
+        mal_id: 70
+        skip_if_anilist: false
+    # Medical (3 titulů, 1%)
+      - name: "Medical"
+        mal_id: 67
+        skip_if_anilist: false
+    # Showbiz (3 titulů, 1%)
+      - name: "Showbiz"
+        mal_id: 75
+        skip_if_anilist: false
+    # Crossdressing (2 titulů, 0%)
+      - name: "Crossdressing"
+        mal_id: 81
+        skip_if_anilist: false
+    # Mecha (2 titulů, 0%)
+      - name: "Mecha"
+        mal_id: 18
+        skip_if_anilist: false
+    # Gore (2 titulů, 0%)
+      - name: "Gore"
+        mal_id: 58
+        skip_if_anilist: false
+    # Visual Arts (2 titulů, 0%)
+      - name: "Visual Arts"
+        mal_id: 80
+        skip_if_anilist: false
+    # Mahou Shoujo (2 titulů, 0%)
+      - name: "Mahou Shoujo"
+        mal_id: 66
+        skip_if_anilist: false
+    # Team Sports (1 titulů, 0%)
+      - name: "Team Sports"
+        mal_id: 77
+        skip_if_anilist: false
+    # Iyashikei (1 titulů, 0%)
+      - name: "Iyashikei"
+        mal_id: 63
+        skip_if_anilist: false
+    # Love Status Quo (1 titulů, 0%)
+      - name: "Love Status Quo"
+        mal_id: 74
+        skip_if_anilist: false
+    # Survival (1 titulů, 0%)
+      - name: "Survival"
+        mal_id: 76
+        skip_if_anilist: false
+    # Space (1 titulů, 0%)
+      - name: "Space"
+        mal_id: 29
+        skip_if_anilist: false
+    # Reverse Harem (1 titulů, 0%)
+      - name: "Reverse Harem"
+        mal_id: 73
+        skip_if_anilist: false
+    # Organized Crime (1 titulů, 0%)
+      - name: "Organized Crime"
+        mal_id: 68
+        skip_if_anilist: false
 
   # Demografie (one-hot, reference = shounen)
   demographics:
-    - "Shounen"
-    - "Seinen"
-    - "Shoujo"
-    - "Josei"
+    # Shounen (115 titulů)
+      - "Shounen"
+    # Seinen (39 titulů)
+      - "Seinen"
+    # Shoujo (18 titulů)
+      - "Shoujo"
+    # Josei (3 titulů)
+      - "Josei"
 
   # Zdroj předlohy (one-hot, reference = Manga)
   sources:
-    - "Manga"
-    - "Light novel"
-    - "Visual novel"
-    - "Original"
-    - "Game"
-    - "Novel"
+    # Manga (180 titulů)
+      - "Manga"
+    # Light novel (130 titulů)
+      - "Light novel"
+    # Visual novel (35 titulů)
+      - "Visual novel"
+    # Original (32 titulů)
+      - "Original"
+    # Web manga (14 titulů)
+      - "Web manga"
+    # 4-koma manga (9 titulů)
+      - "4-koma manga"
+    # Novel (5 titulů)
+      - "Novel"
 
   # Typ média (one-hot, reference = TV)
   types:
-    - "TV"
-    - "Movie"
-    - "OVA"
-    - "ONA"
-    - "Special"
+    # TV (220 titulů)
+      - "TV"
+    # Movie (60 titulů)
+      - "Movie"
+    # Special (48 titulů)
+      - "Special"
+    # OVA (45 titulů)
+      - "OVA"
+    # ONA (19 titulů)
+      - "ONA"
+    # TV Special (11 titulů)
+      - "TV Special"
+    # PV (2 titulů)
+      - "PV"
 
   # Numerické příznaky (automaticky normalizované)
   numeric:
@@ -101,7 +304,7 @@ features:
       include: true
     composite_score:
       description: "Vážený průměr MAL + AniList skóre (lepší pokrytí než jen MAL)"
-      include: false   # zapni pokud máš AniList data (přepíše mal_score informaci)
+      include: true   # zapni pokud máš AniList data (přepíše mal_score informaci)
     episodes:
       description: "Počet epizod (log-transformace)"
       include: true
@@ -118,30 +321,128 @@ features:
   # https://myanimelist.net/people/{mal_id}
   staff:
     directors:
-      # Příklady — doplň dle výstupu --list-staff
-      - name: "Ishihara_Tatsuya"   # Clannad, Chuunibyou, Hibike! (KyoAni)
-        mal_id: 2252
-      - name: "Okada_Kenichi"      # Angel Beats, AnoHana, Charlotte
-        mal_id: 4985
-      - name: "Shinkai_Makoto"     # Kimi no Na wa, Tenki no Ko
-        mal_id: 1879
-      - name: "Watanabe_Ayumu"     # Tsuki ga Kirei
-        mal_id: 36491
-      - name: "Andou_Masahiro"     # Seishun Buta Yarou, Sousou no Frieren
-        mal_id: 25805
-      - name: "Hashimoto_Hiroko"   # Horimiya, Boku no Kokoro
-        mal_id: 50516
+    - name: "Ishihara_Tatsuya"  # Ishihara, Tatsuya (12 titulů, director)
+      mal_id: 5055
+    - name: "Kanazawa_Hiromitsu"  # Kanazawa, Hiromitsu (7 titulů, director)
+      mal_id: 10435
+    - name: "Shinbou_Akiyuki"  # Shinbou, Akiyuki (7 titulů, director)
+      mal_id: 5089
+    - name: "Mizushima_Tsutomu"  # Mizushima, Tsutomu (7 titulů, director)
+      mal_id: 9552
+    - name: "Kishi_Seiji"  # Kishi, Seiji (6 titulů, director)
+      mal_id: 6909
+    - name: "Saitou_Hisashi"  # Saitou, Hisashi (6 titulů, director)
+      mal_id: 5981
+    - name: "Iwasaki_Yoshiaki"  # Iwasaki, Yoshiaki (6 titulů, director)
+      mal_id: 6180
+    - name: "Hatakeyama_Mamoru"  # Hatakeyama, Mamoru (6 titulů, director)
+      mal_id: 16583
+    - name: "Motonaga_Keitarou"  # Motonaga, Keitarou (5 titulů, director)
+      mal_id: 8143
+    - name: "Kanasaki_Takaomi"  # Kanasaki, Takaomi (5 titulů, director)
+      mal_id: 11299
+    - name: "Kaneko_Hiraku"  # Kaneko, Hiraku (5 titulů, director)
+      mal_id: 12537
+    - name: "Itou_Naoyuki"  # Itou, Naoyuki (5 titulů, director)
+      mal_id: 40519
+    - name: "Masui_Souichi"  # Masui, Souichi (5 titulů, director)
+      mal_id: 6389
+    - name: "Yonetani_Yoshitomo"  # Yonetani, Yoshitomo (5 titulů, director)
+      mal_id: 12262
+    - name: "Ikehata_Hiroshi"  # Ikehata, Hiroshi (5 titulů, director)
+      mal_id: 28575
+    - name: "Nagai_Tatsuyuki"  # Nagai, Tatsuyuki (4 titulů, director)
+      mal_id: 8539
+    - name: "Yoshimura_Ai"  # Yoshimura, Ai (4 titulů, director)
+      mal_id: 16067
+    - name: "Akitaya_Noriaki"  # Akitaya, Noriaki (4 titulů, director)
+      mal_id: 37589
+    - name: "Asaka_Morio"  # Asaka, Morio (4 titulů, director)
+      mal_id: 5921
+    - name: "Nakagawa_Jun"  # Nakagawa, Jun (4 titulů, director)
+      mal_id: 49775
+    - name: "Miura_Takahiro"  # Miura, Takahiro (4 titulů, director)
+      mal_id: 12167
+    - name: "Ibata_Yoshihide"  # Ibata, Yoshihide (4 titulů, director)
+      mal_id: 38648
+    - name: "Tanaka_Motoki"  # Tanaka, Motoki (4 titulů, director)
+      mal_id: 21471
+    - name: "Takemoto_Yasuhiro"  # Takemoto, Yasuhiro (4 titulů, director)
+      mal_id: 6771
+    - name: "Oonuma_Shin"  # Oonuma, Shin (4 titulů, director)
+      mal_id: 6753
+    - name: "Ootsuki_Atsushi"  # Ootsuki, Atsushi (4 titulů, director)
+      mal_id: 16707
+    - name: "Nishimura_Junji"  # Nishimura, Junji (4 titulů, director)
+      mal_id: 6837
+    - name: "Watanabe_Masaharu"  # Watanabe, Masaharu (4 titulů, director)
+      mal_id: 8127
+    - name: "Itou_Tomohiko"  # Itou, Tomohiko (4 titulů, director)
+      mal_id: 10801
+    - name: "Jinbo_Masato"  # Jinbo, Masato (3 titulů, director)
+      mal_id: 34579
 
     writers:
-      # Příklady — doplň dle výstupu --list-staff
-      - name: "Maeda_Jun"          # Clannad, Angel Beats, Charlotte
-        mal_id: 2910
-      - name: "Kamoshida_Hajime"   # Seishun Buta Yarou (original LN autor)
-        mal_id: 37232
-      - name: "Okada_Mari"         # AnoHana, Toradora (series comp)
-        mal_id: 5062
-      - name: "Hayashi_Mori"       # Sousou no Frieren (series comp)
-        mal_id: 47015
+    - name: "Stocker_Kevin"  # Stocker, Kevin (17 titulů, script)
+      mal_id: 62674
+    - name: "Hanada_Jukki"  # Hanada, Jukki (16 titulů, screenplay)
+      mal_id: 12198
+    - name: "Yokotani_Masahiro"  # Yokotani, Masahiro (16 titulů, script)
+      mal_id: 19175
+    - name: "Yoshida_Reiko"  # Yoshida, Reiko (15 titulů, screenplay)
+      mal_id: 2076
+    - name: "Type-Moon"  # Type-Moon (15 titulů, original creator)
+      mal_id: 2582
+    - name: "Oochi_Keiichirou"  # Oochi, Keiichirou (12 titulů, script)
+      mal_id: 25383
+    - name: "Decouzon_Mélanie"  # Decouzon, Mélanie (12 titulů, script)
+      mal_id: 59232
+    - name: "Nakamoto_Muneo"  # Nakamoto, Muneo (12 titulů, script)
+      mal_id: 56064
+    - name: "Torako"  # Torako (12 titulů, original creator)
+      mal_id: 19375
+    - name: "Hata_Kenjirou"  # Hata, Kenjirou (12 titulů, original creator)
+      mal_id: 5074
+    - name: "Kakihara_Yuuko"  # Kakihara, Yuuko (11 titulů, script)
+      mal_id: 15655
+    - name: "Kizawa_Yukito"  # Kizawa, Yukito (11 titulů, screenplay)
+      mal_id: 40112
+    - name: "Shimo_Fumihiko"  # Shimo, Fumihiko (11 titulů, script)
+      mal_id: 8067
+    - name: "Marchi_Jamie"  # Marchi, Jamie (10 titulů, script)
+      mal_id: 891
+    - name: "Sugawara_Yukie"  # Sugawara, Yukie (10 titulů, script)
+      mal_id: 40544
+    - name: "Kawahara_Reki"  # Kawahara, Reki (10 titulů, original creator)
+      mal_id: 11466
+    - name: "Uezu_Makoto"  # Uezu, Makoto (9 titulů, script)
+      mal_id: 6929
+    - name: "Akatsuki_Natsume"  # Akatsuki, Natsume (9 titulů, original creator)
+      mal_id: 26303
+    - name: "Maruyama_Kugane"  # Maruyama, Kugane (9 titulů, original creator)
+      mal_id: 24221
+    - name: "Nagatsuki_Tappei"  # Nagatsuki, Tappei (9 titulů, original creator)
+      mal_id: 32649
+    - name: "Akasaka_Aka"  # Akasaka, Aka (9 titulů, original creator)
+      mal_id: 2139
+    - name: "Takahashi_Rumiko"  # Takahashi, Rumiko (9 titulů, original creator)
+      mal_id: 1891
+    - name: "Yoshioka_Takao"  # Yoshioka, Takao (8 titulů, script)
+      mal_id: 14787
+    - name: "Tachibana_Koushi"  # Tachibana, Koushi (8 titulů, original creator)
+      mal_id: 16861
+    - name: "Nasu_Kinoko"  # Nasu, Kinoko (8 titulů, original creator)
+      mal_id: 3250
+    - name: "Machida_Touko"  # Machida, Touko (8 titulů, script)
+      mal_id: 10294
+    - name: "Nakanishi_Yasuhiro"  # Nakanishi, Yasuhiro (8 titulů, script)
+      mal_id: 48509
+    - name: "Okada_Mari"  # Okada, Mari (7 titulů, script)
+      mal_id: 5978
+    - name: "Shinbou_Akiyuki"  # Shinbou, Akiyuki (7 titulů, series composition)
+      mal_id: 5089
+    - name: "Tou_Fuyashi"  # Tou, Fuyashi (7 titulů, series composition)
+      mal_id: 9999
 
 # ── Model ──────────────────────────────────────────────────────
 model:
@@ -154,77 +455,137 @@ anilist:
   enabled: true
   use_rank: true         # spojitý rank 0–1 (true) nebo binárně (false)
   min_rank: 0            # minimální rank pro zahrnutí (0–100)
-  exclude_adult:   true
-  exclude_spoiler: true
+  exclude_adult:   false
+  exclude_spoiler: false
 
   # Tagy k zahrnutí — názvy přesně dle AniList (case-sensitive)
   # Průzkum: python main.py --list-tags
   tags:
-    # Archetypy ženských postav
-    - "Tsundere"
-    - "Kuudere"
-    - "Dandere"
-    - "Yandere"
-    - "Genki Girl"
-    - "Ojou-sama"
-    - "Tomboy"
-
-    # Narativní vzory v romance
-    - "Love Triangle"
-    - "Slow Romance"
-    - "Childhood Friends"
-    - "Rivals to Lovers"
-    - "Fake Relationship"
-    - "Unrequited Love"
-    - "Age Gap"
-    - "Forbidden Love"
-    - "Sudden Girlfriend Appearance"
-
+    # Archetypy postav
+    - "Tsundere"  # 145 titulů (36%)
+    - "Kuudere"  # 141 titulů (35%)
+    - "Yandere"  # 36 titulů (9%)
+    - "Ojou-sama"  # 28 titulů (7%)
+    - "Tomboy"  # 47 titulů (12%)
+    # Romance vzory
+    - "Love Triangle"  # 100 titulů (25%)
+    - "Unrequited Love"  # 51 titulů (13%)
     # Emocionální tón
-    - "Tearjerker"
-    - "Feel-good"
-    - "Tragedy"
-    - "Bittersweet"
-
-    # Tematické kategorie
-    - "Coming of Age"
-    - "Philosophy"
-    - "Psychological"
-    - "Found Family"
-    - "Music"
-
-    # Prostředí a zasazení (AniList verze — nahrazují MAL témata)
-    - "School"
-    - "School Club"
-    - "Workplace"
-    - "Isekai"
-    - "Military"
-    - "Time Skip"
-    - "Time Manipulation"
-
-    # Narativní struktura
-    - "Non-linear Storytelling"
-    - "Multiple Protagonists"
-    - "Ensemble Cast"
-
-    # Harem typy (AniList verze)
-    - "Harem"
-    - "Reverse Harem"
+    - "Slapstick"  # 79 titulů (20%)
+    - "Parody"  # 65 titulů (16%)
+    # Témata a prostředí
+    - "School"  # 225 titulů (56%)
+    - "School Club"  # 85 titulů (21%)
+    - "Isekai"  # 61 titulů (15%)
+    - "Military"  # 30 titulů (8%)
+    - "Coming of Age"  # 98 titulů (24%)
+    - "Found Family"  # 30 titulů (8%)
+    - "Philosophy"  # 41 titulů (10%)
+    - "Ensemble Cast"  # 116 titulů (29%)
+    # Ostatní
+    - "Male Protagonist"  # 275 titulů (69%)
+    - "Heterosexual"  # 250 titulů (62%)
+    - "Female Protagonist"  # 196 titulů (49%)
+    - "Female Harem"  # 166 titulů (42%)
+    - "Primarily Female Cast"  # 141 titulů (35%)
+    - "Primarily Teen Cast"  # 138 titulů (34%)
+    - "Nudity"  # 129 titulů (32%)
+    - "Shounen"  # 117 titulů (29%)
+    - "Urban Fantasy"  # 75 titulů (19%)
+    - "Magic"  # 73 titulů (18%)
+    - "Urban"  # 67 titulů (17%)
+    - "Seinen"  # 61 titulů (15%)
+    - "CGI"  # 61 titulů (15%)
+    - "Crossdressing"  # 54 titulů (14%)
+    - "Primarily Adult Cast"  # 54 titulů (14%)
+    - "Maids"  # 52 titulů (13%)
+    - "Episodic"  # 51 titulů (13%)
+    - "Swordplay"  # 48 titulů (12%)
+    - "Meta"  # 47 titulů (12%)
+    - "Medieval"  # 44 titulů (11%)
+    - "Gore"  # 42 titulů (10%)
+    - "Anti-Hero"  # 42 titulů (10%)
+    - "Chuunibyou"  # 41 titulů (10%)
+    - "Super Power"  # 41 titulů (10%)
+    - "LGBTQ+ Themes"  # 40 titulů (10%)
+    - "Gender Bending"  # 40 titulů (10%)
+    - "Gods"  # 39 titulů (10%)
+    - "Demons"  # 39 titulů (10%)
+    - "Family Life"  # 38 titulů (10%)
+    - "Chibi"  # 38 titulů (10%)
+    - "Work"  # 37 titulů (9%)
+    - "Otaku Culture"  # 36 titulů (9%)
+    - "Guns"  # 36 titulů (9%)
+    - "Memory Manipulation"  # 35 titulů (9%)
+    - "Politics"  # 35 titulů (9%)
+    - "Cohabitation"  # 34 titulů (8%)
+    - "War"  # 33 titulů (8%)
+    - "Animals"  # 33 titulů (8%)
+    - "Bullying"  # 30 titulů (8%)
+    - "Surreal Comedy"  # 30 titulů (8%)
+    - "Monster Girl"  # 30 titulů (8%)
+    - "Food"  # 30 titulů (8%)
+    - "Video Games"  # 30 titulů (8%)
+    - "Elf"  # 29 titulů (7%)
+    - "Assassins"  # 29 titulů (7%)
+    - "Rehabilitation"  # 28 titulů (7%)
+    - "Cute Girls Doing Cute Things"  # 27 titulů (7%)
+    - "Travel"  # 27 titulů (7%)
+    - "Twins"  # 26 titulů (6%)
+    - "Teacher"  # 26 titulů (6%)
 
   # Animační studia jako binární příznaky
   studios:
-    - "Kyoto Animation"
-    - "Shaft"
-    - "P.A. Works"
-    - "A-1 Pictures"
-    - "J.C. Staff"
-    - "Brain's Base"
-    - "Doga Kobo"
-    - "feel."
-    - "Wit Studio"
-    - "CloverWorks"
-    - "MAPPA"
-    - "Madhouse"
+    - "J.C.STAFF"  # 30 titulů (8%)
+    - "A-1 Pictures"  # 29 titulů (7%)
+    - "Kyoto Animation"  # 27 titulů (7%)
+    - "CloverWorks"  # 16 titulů (4%)
+    - "MADHOUSE"  # 15 titulů (4%)
+    - "Manglobe"  # 14 titulů (4%)
+    - "Xebec"  # 13 titulů (3%)
+    - "TMS Entertainment"  # 12 titulů (3%)
+    - "WHITE FOX"  # 12 titulů (3%)
+    - "Studio DEEN"  # 11 titulů (3%)
+    - "Actas"  # 11 titulů (3%)
+    - "Seven Arcs"  # 10 titulů (2%)
+    - "EGG FIRM"  # 10 titulů (2%)
+    - "ufotable"  # 9 titulů (2%)
+    - "Bibury Animation Studios"  # 8 titulů (2%)
+    - "SILVER LINK."  # 8 titulů (2%)
+    - "feel."  # 8 titulů (2%)
+    - "GoHands"  # 7 titulů (2%)
+    - "Shaft"  # 7 titulů (2%)
+    - "Animation Do"  # 7 titulů (2%)
+    - "Seven"  # 7 titulů (2%)
+    - "GEEKTOYS"  # 6 titulů (2%)
+    - "8-bit"  # 6 titulů (2%)
+    - "WIT STUDIO"  # 6 titulů (2%)
+    - "P.A.WORKS"  # 5 titulů (1%)
+    - "Production I.G"  # 5 titulů (1%)
+    - "AIC A.S.T.A."  # 5 titulů (1%)
+    - "AIC Plus+"  # 5 titulů (1%)
+    - "Doga Kobo"  # 5 titulů (1%)
+    - "Lerche"  # 5 titulů (1%)
+    - "Zero-G"  # 5 titulů (1%)
+    - "Drive"  # 4 titulů (1%)
+    - "Passione"  # 4 titulů (1%)
+    - "LIDENFILMS"  # 4 titulů (1%)
+    - "OLM"  # 4 titulů (1%)
+    - "Studio Bind"  # 4 titulů (1%)
+    - "Satelight"  # 4 titulů (1%)
+    - "Tezuka Productions"  # 3 titulů (1%)
+    - "Shin-Ei Animation"  # 3 titulů (1%)
+    - "AIC Build"  # 3 titulů (1%)
+    - "Studio Silver"  # 3 titulů (1%)
+    - "Arvo Animation"  # 3 titulů (1%)
+    - "Production IMS"  # 3 titulů (1%)
+    - "AIC"  # 3 titulů (1%)
+    - "Studio PuYUKAI"  # 3 titulů (1%)
+    - "Nexus"  # 3 titulů (1%)
+    - "CoMix Wave"  # 3 titulů (1%)
+    - "Studio Ghibli"  # 3 titulů (1%)
+    - "TOHO animation STUDIO"  # 3 titulů (1%)
+    - "TROYCA"  # 3 titulů (1%)
 
 # ── Cluster analýza (--cluster) ────────────────────────────────
 cluster:
