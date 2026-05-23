@@ -58,6 +58,7 @@ class CFConfig:
     # Technické
     cache_dir:           str   = "cache"
     request_delay:       float = 0.5   # sekundy mezi Jikan requesty
+    seed_source:         str   = "reviews"  # "reviews" nebo "userupdates"
 
     @classmethod
     def from_config(cls, cfg: dict) -> "CFConfig":
@@ -75,6 +76,7 @@ class CFConfig:
             min_mal_score=       c.get("min_mal_score",        6.5),
             cache_dir=           cfg.get("cache_dir",          "cache"),
             request_delay=       c.get("request_delay",        0.5),
+            seed_source=         c.get("seed_source",          "reviews"),
         )
 
 
@@ -182,19 +184,32 @@ class CollaborativeFilter:
 
     def _get_anime_userupdates(self, mal_id: int, pages: int = 2) -> list[str]:
         """
-        Vrátí seznam uživatelských jmen kteří nedávno aktualizovali
-        daný titul (endpoint /anime/{id}/userupdates).
+        Vrátí seznam uživatelských jmen pro daný titul.
 
-        Jde o proxy pro "kdo tento titul sledoval/dokončil".
+        Podporované endpointy (volba přes cfg.seed_source):
+          "userupdates" — uživatelé kteří titul nedávno aktualizovali.
+                          Vrací hodně uživatelů ale jen nedávnou aktivitu
+                          → pro starší anime může být prázdné.
+          "reviews"     — uživatelé kteří napsali recenzi.
+                          Méně uživatelů ale angažovanější, s většími listy,
+                          a pokrývá i starší tituly.
+
+        Oba endpointy vrací data[].user.username — formát je kompatibilní.
         """
-        cache_key = f"userupdates_{mal_id}_p{pages}"
-        cached = self._load(cache_key)
+        source    = self.cfg.seed_source
+        cache_key = f"{source}_{mal_id}_p{pages}"
+        cached    = self._load(cache_key)
         if cached is not None:
             return cached
 
         usernames = []
         for page in range(1, pages + 1):
-            data = self._jikan_get(f"anime/{mal_id}/userupdates?page={page}")
+            endpoint = (
+                f"anime/{mal_id}/reviews?page={page}"
+                if source == "reviews"
+                else f"anime/{mal_id}/userupdates?page={page}"
+            )
+            data = self._jikan_get(endpoint)
             if not data or not data.get("data"):
                 break
             for entry in data["data"]:

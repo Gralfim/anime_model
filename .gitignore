@@ -15,6 +15,7 @@ cache
 animelist.xml
 predictions.csv
 clusters.csv
+cf_recommendations.csv
 
 # IDE
 .vscodesettings.json

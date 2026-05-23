@@ -590,14 +590,14 @@ anilist:
 # ── Collaborative Filtering (--cf) ────────────────────────────────
 cf:
   # Výběr seed uživatelů přes niche tituly
-  seed_min_score:      8      # min. tvoje skóre pro seed titul
-  seed_max_popularity: 50000  # max. MAL members — filtr "niche" titulů
+  seed_min_score:      7      # min. tvoje skóre pro seed titul
+  seed_max_popularity: 200000 # max. MAL members — filtr "niche" titulů
                               # zvyš pokud nemáš dost seed titulů
-  seed_titles_count:   20     # kolik niche titulů použít
-  users_per_seed:      15     # kolik uživatelů na seed titul
+  seed_titles_count:   50     # kolik niche titulů použít
+  users_per_seed:      100    # kolik uživatelů na seed titul
 
   # Filtrování podobných uživatelů
-  min_overlap:         50     # min. společných titulů pro výpočet korelace
+  min_overlap:         15     # min. společných titulů pro výpočet korelace
   min_correlation:     0.15   # min. Pearsonova korelace (snižovat opatrně)
   top_k_users:         50     # počet nejpodobnějších uživatelů
 
@@ -606,6 +606,13 @@ cf:
   show_top:            25     # počet výsledků
   min_mal_score:       6.5    # min. MAL skóre kandidáta
   request_delay:       0.5    # sekundy mezi Jikan requesty (nesnižovat)
+
+  # Zdroj seed uživatelů:
+  #   reviews     — uživatelé kteří napsali recenzi (méně uživatelů,
+  #                 ale angažovanější a pokrývá i starší tituly) ← doporučeno
+  #   userupdates — uživatelé kteří titul nedávno aktualizovali
+  #                 (víc uživatelů, ale jen nedávná aktivita)
+  seed_source: reviews
 
 # ── Cluster analýza (--cluster) ────────────────────────────────
 cluster:
