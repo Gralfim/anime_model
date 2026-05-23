@@ -13,6 +13,8 @@ Použití:
     python main.py --cluster --k 5        # jiný počet clusterů (default: 6)
     python main.py --train-only           # jen trénink, bez predikce
     python main.py --list-tags            # průzkum AniList tagů + YAML výstup
+    python main.py --cf                   # collaborative filtering (podobní uživatelé)
+    python main.py --cf --cf-resample     # vynutí nový výběr uživatelů (ignoruje cache seedů)
     python main.py --list-tags --list-tags-min 5  # přísnější práh
     python main.py --list-staff           # průzkum režisérů/scenáristů + YAML
     python main.py --no-aggregate         # vypni agregaci sérií
@@ -34,6 +36,10 @@ from jikan_client      import JikanClient
 from anilist_client    import AniListClient
 from feature_builder   import FeatureConfig, build_feature_matrix, build_prediction_matrix
 from series_aggregator import aggregate_entries, print_series_groups
+from cf_model          import (
+    CFConfig, CollaborativeFilter,
+    print_cf_report, export_cf_csv,
+)
 from cluster_analyzer  import (
     run_clustering, assign_candidates,
     print_cluster_report, export_cluster_csv,
@@ -428,6 +434,46 @@ def run(cfg: dict, args: argparse.Namespace) -> None:
                 tablefmt="simple"
             ))
 
+    # ── Collaborative Filtering (--cf) ───────────────────────────────────────
+    if args.cf:
+        from cf_model import SimilarUser   # lokální import pro přehlednost
+
+        cf_cfg = CFConfig.from_config(cfg)
+        cf     = CollaborativeFilter(cf_cfg, jikan)
+
+        print(f"\n{'═'*70}")
+        print(f"  COLLABORATIVE FILTERING")
+        print(f"  Seed: niche tituly se skóre ≥{cf_cfg.seed_min_score}, "
+              f"members ≤{cf_cfg.seed_max_popularity:,}")
+        print(f"  Podobnost: Pearson r ≥{cf_cfg.min_correlation}, "
+              f"overlap ≥{cf_cfg.min_overlap} titulů")
+        print(f"{'═'*70}")
+
+        # Invaliduj cache seedů pokud --cf-resample
+        if getattr(args, "cf_resample", False):
+            import shutil
+            seed_cache = Path(cf_cfg.cache_dir) / "cf"
+            if seed_cache.exists():
+                for f in seed_cache.glob("userupdates_*.json"):
+                    f.unlink()
+                print("  Cache seed uživatelů vymazána.")
+
+        recommendations = cf.run(
+            my_entries   = train_entries,
+            jikan_data   = jikan_data,
+            existing_ids = {e.mal_id for e in entries},
+            titles_map   = titles,
+        )
+
+        # Načti similar_users pro výpis (z interního stavu CF)
+        # CF si je ukládá v průběhu run() — vypiš z výsledků
+        print_cf_report(recommendations, show_top=cf_cfg.show_top)
+        export_cf_csv(recommendations)
+        print(f"  Výsledky uloženy: cf_recommendations.csv")
+
+        if args.train_only:
+            return
+
     # ── Predikce ──────────────────────────────────────────────────────────────
     if args.train_only:
         print("\nPredikce přeskočena (--train-only).")
@@ -548,6 +594,8 @@ def main():
     parser.add_argument("--list-studios", action="store_true",   help="Průzkum AniList animačních studií + YAML ready-to-paste výstup")
     parser.add_argument("--list-tags-n",  type=int,              help="Počet tagů/staffu ve výpisu (default: 80/30)")
     parser.add_argument("--list-tags-min",type=int,              help="Minimální počet titulů pro zahrnutí do YAML (default: auto)")
+    parser.add_argument("--cf",           action="store_true",   help="Collaborative filtering — doporučení přes podobné uživatele")
+    parser.add_argument("--cf-resample",  action="store_true",   help="Vynutí nový výběr seed uživatelů (ignoruje cache)")
     parser.add_argument("--no-aggregate", action="store_true",   help="Vypni agregaci sérií")
     parser.add_argument("--verbose",      action="store_true",   help="Podrobný výstup")
     args = parser.parse_args()
